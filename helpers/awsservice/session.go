@@ -1,4 +1,4 @@
-package main
+package awsservice
 
 import (
 	"log"
@@ -139,10 +139,4 @@ func AddItem() {
 
 	fmt.Println("Successfully added '" + item.UserID + "' (" + item.Hash + ") to table " + tableName)
 	// snippet-end:[dynamodb.go.create_item.call]
-}
-
-func main() {
-	GetItem()
-	// GetTables()
-	// AddItem()
 }
