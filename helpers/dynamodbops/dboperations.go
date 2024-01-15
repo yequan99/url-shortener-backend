@@ -83,6 +83,13 @@ func DeleteItems(svc *dynamodb.DynamoDB, tableName string, keyAttributes map[str
 
 // Update items in DynamoDB Table
 func UpdateItems(svc *dynamodb.DynamoDB, tableName string, keyAttributes map[string]*dynamodb.AttributeValue, expressionAttributes map[string]*dynamodb.AttributeValue, changeAttributes []string) error {
+
+	// Check if attribute exists in DB
+	_, err := ReadItems(svc, tableName, keyAttributes)
+	if err != nil {
+		return err
+	}
+
 	// Creating UpdateExpression
 	var updateExpression *string
 	if len(changeAttributes) > 0 {
@@ -107,7 +114,7 @@ func UpdateItems(svc *dynamodb.DynamoDB, tableName string, keyAttributes map[str
 		UpdateExpression:          updateExpression,
 	}
 
-	_, err := svc.UpdateItem(input)
+	_, err = svc.UpdateItem(input)
 	if err != nil {
 		return fmt.Errorf("Item cannot be updated: ", err)
 	}
