@@ -4,6 +4,8 @@ import (
 	"fmt"
 	// "net/http"
 
+	log "github.com/sirupsen/logrus"
+
 	// chi "github.com/go-chi/chi/v5"
 	// "github.com/go-chi/chi/v5/middleware"
 	// "github.com/rs/cors"
@@ -34,17 +36,20 @@ func ReadDB() {
 	item := Item{}
 
 	result, err := dynamodbops.ReadItems(svc, tableName, keyAttributes)
-
-	err = dynamodbattribute.UnmarshalMap(result.Item, &item)
 	if err != nil {
-		panic(fmt.Sprintf("Failed to unmarshal Record, %v", err))
-	}
-
-	if item.Hash == "" {
-		fmt.Println("not found!")
+		log.Error("Failed to read DB: ", err)
 	} else {
-		fmt.Println("Found item:")
-		fmt.Println("hash:  ", item.Hash)
+		err = dynamodbattribute.UnmarshalMap(result.Item, &item)
+		if err != nil {
+			log.Error("Failed to read DB %s", err)
+		}
+
+		if item.Hash == "" {
+			fmt.Println("not found!")
+		} else {
+			fmt.Println("Found item:")
+			fmt.Println("hash:  ", item.Hash)
+		}
 	}
 }
 
@@ -62,7 +67,27 @@ func WriteDB() {
 	err := dynamodbops.InsertItems(svc, tableName, item, condition)
 	if err != nil {
 		fmt.Println(err)
+		log.Error(err)
 	}
+}
+
+func DeleteDB() {
+	svc := awsservice.GetDBConn()
+	tableName := "UserAuth"
+	UserID := "5"
+	keyAttributes := map[string]*dynamodb.AttributeValue{
+		"userID": {
+			S: aws.String(UserID),
+		},
+	}
+	err := dynamodbops.DeleteItems(svc, tableName, keyAttributes)
+	if err != nil {
+		fmt.Println("Failed to delete: ", err)
+		log.Error(err)
+	} else {
+		fmt.Println("Deleted userID" + " (" + UserID + ") from table " + tableName)
+	}
+
 }
 
 func main() {
@@ -86,5 +111,6 @@ func main() {
 	// fmt.Println(http.ListenAndServe(":5050", router))
 
 	// ReadDB()
-	WriteDB()
+	// WriteDB()
+	DeleteDB()
 }

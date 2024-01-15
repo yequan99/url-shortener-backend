@@ -23,6 +23,11 @@ func ReadItems(svc *dynamodb.DynamoDB, tableName string, keyAttributes map[strin
 		return nil, fmt.Errorf("error calling GetItem: %s", err)
 	}
 
+	// Check if the item is not found
+	if result.Item == nil {
+		return nil, fmt.Errorf("item not found in table %s", tableName)
+	}
+
 	return result, nil
 }
 
@@ -62,4 +67,21 @@ func InsertItems(svc *dynamodb.DynamoDB, tableName string, newItem interface{}, 
 
 	fmt.Printf("Successfully added item to table %s\n", tableName)
 	return nil
+}
+
+// Deleting items in DynamoDB Table
+func DeleteItems(svc *dynamodb.DynamoDB, tableName string, keyAttributes map[string]*dynamodb.AttributeValue) error {
+
+	// Check if item exists
+	_, err := ReadItems(svc, tableName, keyAttributes)
+	if err != nil {
+		return fmt.Errorf("Item cannot be deleted as item is not in DB")
+	}
+
+	input := &dynamodb.DeleteItemInput{
+		Key:       keyAttributes,
+		TableName: aws.String(tableName),
+	}
+	_, err = svc.DeleteItem(input)
+	return err
 }
