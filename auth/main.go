@@ -15,26 +15,21 @@ import (
 
 	"helpers/awsservice"
 	"helpers/dynamodbops"
+	"helpers/models"
 )
-
-type Item struct {
-	UserID    string `json:"UserID"`
-	Salt      string `json:"Salt"`
-	HashedPwd string `json:"HashedPwd"`
-}
 
 func ReadDB() {
 	svc := awsservice.GetDBConn()
 
 	tableName := "UserAuth"
-	userID := "1"
+	userID := "3"
 	keyAttributes := map[string]*dynamodb.AttributeValue{
 		"UserID": {
 			S: aws.String(userID),
 		},
 	}
 
-	item := Item{}
+	item := models.UserAuth{}
 
 	result, err := dynamodbops.ReadItems(svc, tableName, keyAttributes)
 	if err != nil {
@@ -49,6 +44,7 @@ func ReadDB() {
 			fmt.Println("not found!")
 		} else {
 			fmt.Println("Found item:", item)
+			fmt.Println("username:  ", item.Username)
 			fmt.Println("hash:  ", item.HashedPwd)
 			fmt.Println("salt:  ", item.Salt)
 		}
@@ -59,8 +55,9 @@ func WriteDB() {
 	svc := awsservice.GetDBConn()
 
 	tableName := "UserAuth"
-	item := Item{
+	item := models.UserAuth{
 		UserID:    "6",
+		Username:  "hello",
 		Salt:      "sdf",
 		HashedPwd: "cvb",
 	}
@@ -96,8 +93,7 @@ func DeleteDB() {
 func UpdateDB() {
 	svc := awsservice.GetDBConn()
 	tableName := "UserAuth"
-	UserID := "1"
-	// change := "HashedPwd"
+	UserID := "2"
 	keyAttributes := map[string]*dynamodb.AttributeValue{
 		"UserID": {
 			S: aws.String(UserID),
@@ -110,8 +106,11 @@ func UpdateDB() {
 		":Salt": {
 			S: aws.String("xcv"),
 		},
+		":Username": {
+			S: aws.String("world"),
+		},
 	}
-	change := []string{"HashedPwd", "Salt"}
+	change := []string{"HashedPwd", "Salt", "Username"}
 	err := dynamodbops.UpdateItems(svc, tableName, keyAttributes, expressionAttributes, change)
 	if err != nil {
 		fmt.Println("Failed to update: ", err)
