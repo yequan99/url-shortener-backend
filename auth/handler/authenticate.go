@@ -8,6 +8,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
+	"golang.org/x/crypto/bcrypt"
 
 	"helpers/awsservice"
 	"helpers/dstruct"
@@ -37,11 +38,50 @@ func Authenticate(credentials dstruct.UserLoginCredentials) error {
 		}
 	}
 
-	// Hash salt and pwd
-	saltedPwd := entry.Salt + entry.HashedPwd
-	fmt.Println(saltedPwd)
-
 	// Check if hashedpwd is correct
+
+	return nil
+}
+
+func hashAndSalt(pwd []byte) string {
+
+	// Use GenerateFromPassword to hash & salt pwd.
+	// MinCost is just an integer constant provided by the bcrypt
+	// package along with DefaultCost & MaxCost.
+	// The cost can be any value you want provided it isn't lower
+	// than the MinCost (4)
+	hash, err := bcrypt.GenerateFromPassword(pwd, bcrypt.MinCost)
+	if err != nil {
+		log.Println(err)
+	}
+	// GenerateFromPassword returns a byte slice so we need to
+	// convert the bytes to a string and return it
+	return string(hash)
+}
+
+func Register(credentials dstruct.UserLoginCredentials) error {
+
+	fmt.Println(credentials.Username)
+	fmt.Println(credentials.Password)
+
+	// Salt and hash password
+	hash := hashAndSalt([]byte(credentials.Password))
+	fmt.Println(hash)
+
+	// Insert to DB
+	svc := awsservice.GetDBConn()
+
+	tableName := "UserAuth"
+	item := models.UserAuth{
+		Username:  credentials.Username,
+		HashedPwd: hash,
+	}
+	condition := []string{"Username"}
+	err := dynamodbops.InsertItems(svc, tableName, item, condition)
+	if err != nil {
+		log.Errorf("[User Registration] Unable to register user:", err)
+		return fmt.Errorf("[User Registration] Unable to register user:", err)
+	}
 
 	return nil
 }

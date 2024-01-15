@@ -49,7 +49,6 @@ func ReadDB() {
 			fmt.Println("Found item:", item)
 			fmt.Println("username:  ", item.Username)
 			fmt.Println("hash:  ", item.HashedPwd)
-			fmt.Println("salt:  ", item.Salt)
 		}
 	}
 }
@@ -60,7 +59,6 @@ func WriteDB() {
 	tableName := "UserAuth"
 	item := models.UserAuth{
 		Username:  "hello",
-		Salt:      "sdf",
 		HashedPwd: "cvb",
 	}
 
@@ -151,6 +149,23 @@ func main() {
 
 		handler.Authenticate(credentials)
 		w.WriteHeader(http.StatusOK)
+	})
+
+	router.Post("/register", func(w http.ResponseWriter, r *http.Request) {
+		var credentials dstruct.UserLoginCredentials
+		decoder := json.NewDecoder(r.Body)
+		err := decoder.Decode(&credentials)
+		if err != nil {
+			http.Error(w, "Invalid JSON format", http.StatusBadRequest)
+			return
+		}
+
+		err = handler.Register(credentials)
+		if err != nil {
+			w.WriteHeader(http.StatusBadRequest)
+		} else {
+			w.WriteHeader(http.StatusOK)
+		}
 
 	})
 
