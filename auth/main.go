@@ -147,8 +147,12 @@ func main() {
 			return
 		}
 
-		handler.Authenticate(credentials)
-		w.WriteHeader(http.StatusOK)
+		err = handler.Authenticate(credentials)
+		if err != nil {
+			w.WriteHeader(http.StatusBadRequest)
+		} else {
+			w.WriteHeader(http.StatusOK)
+		}
 	})
 
 	router.Post("/register", func(w http.ResponseWriter, r *http.Request) {
@@ -166,7 +170,6 @@ func main() {
 		} else {
 			w.WriteHeader(http.StatusOK)
 		}
-
 	})
 
 	fmt.Println("Starting server at port 5050")
