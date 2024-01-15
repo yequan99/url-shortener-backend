@@ -93,7 +93,7 @@ func DeleteDB() {
 func UpdateDB() {
 	svc := awsservice.GetDBConn()
 	tableName := "UserAuth"
-	UserID := "2"
+	UserID := "4"
 	keyAttributes := map[string]*dynamodb.AttributeValue{
 		"UserID": {
 			S: aws.String(UserID),
