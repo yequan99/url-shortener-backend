@@ -8,11 +8,6 @@ import (
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
 )
 
-type Item struct {
-	UserID string `json:"userID"`
-	Hash   string `json:"hash"`
-}
-
 // Listing items in a DynamoDB Table
 func ReadItems(svc *dynamodb.DynamoDB, tableName string, keyAttributes map[string]*dynamodb.AttributeValue) (*dynamodb.GetItemOutput, error) {
 	result, err := svc.GetItem(&dynamodb.GetItemInput{
@@ -84,4 +79,38 @@ func DeleteItems(svc *dynamodb.DynamoDB, tableName string, keyAttributes map[str
 	}
 	_, err = svc.DeleteItem(input)
 	return err
+}
+
+// Update items in DynamoDB Table
+func UpdateItems(svc *dynamodb.DynamoDB, tableName string, keyAttributes map[string]*dynamodb.AttributeValue, expressionAttributes map[string]*dynamodb.AttributeValue, changeAttributes []string) error {
+	// Creating UpdateExpression
+	var updateExpression *string
+	if len(changeAttributes) > 0 {
+		for _, att := range changeAttributes {
+			update := att + " = :" + att
+			if updateExpression != nil {
+				// Concatenate with AND if conditionExpression is already set
+				*updateExpression += ", " + att + " = :" + att
+			} else {
+				// Initialize conditionExpression if it's nil
+				update = "set " + update
+				updateExpression = &update
+			}
+		}
+	}
+
+	input := &dynamodb.UpdateItemInput{
+		ExpressionAttributeValues: expressionAttributes,
+		TableName:                 aws.String(tableName),
+		Key:                       keyAttributes,
+		ReturnValues:              aws.String("UPDATED_NEW"),
+		UpdateExpression:          updateExpression,
+	}
+
+	_, err := svc.UpdateItem(input)
+	if err != nil {
+		return fmt.Errorf("Item cannot be updated: ", err)
+	}
+
+	return nil
 }

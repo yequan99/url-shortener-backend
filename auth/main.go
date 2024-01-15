@@ -18,17 +18,18 @@ import (
 )
 
 type Item struct {
-	UserID string `json:"userID"`
-	Hash   string `json:"hash"`
+	UserID    string `json:"UserID"`
+	Salt      string `json:"Salt"`
+	HashedPwd string `json:"HashedPwd"`
 }
 
 func ReadDB() {
 	svc := awsservice.GetDBConn()
 
 	tableName := "UserAuth"
-	userID := "4"
+	userID := "1"
 	keyAttributes := map[string]*dynamodb.AttributeValue{
-		"userID": {
+		"UserID": {
 			S: aws.String(userID),
 		},
 	}
@@ -44,11 +45,12 @@ func ReadDB() {
 			log.Error("Failed to read DB %s", err)
 		}
 
-		if item.Hash == "" {
+		if item.HashedPwd == "" {
 			fmt.Println("not found!")
 		} else {
-			fmt.Println("Found item:")
-			fmt.Println("hash:  ", item.Hash)
+			fmt.Println("Found item:", item)
+			fmt.Println("hash:  ", item.HashedPwd)
+			fmt.Println("salt:  ", item.Salt)
 		}
 	}
 }
@@ -58,11 +60,12 @@ func WriteDB() {
 
 	tableName := "UserAuth"
 	item := Item{
-		UserID: "6",
-		Hash:   "cvb",
+		UserID:    "6",
+		Salt:      "sdf",
+		HashedPwd: "cvb",
 	}
 
-	condition := []string{"userID"}
+	condition := []string{"UserID"}
 
 	err := dynamodbops.InsertItems(svc, tableName, item, condition)
 	if err != nil {
@@ -76,7 +79,7 @@ func DeleteDB() {
 	tableName := "UserAuth"
 	UserID := "5"
 	keyAttributes := map[string]*dynamodb.AttributeValue{
-		"userID": {
+		"UserID": {
 			S: aws.String(UserID),
 		},
 	}
@@ -86,6 +89,35 @@ func DeleteDB() {
 		log.Error(err)
 	} else {
 		fmt.Println("Deleted userID" + " (" + UserID + ") from table " + tableName)
+	}
+
+}
+
+func UpdateDB() {
+	svc := awsservice.GetDBConn()
+	tableName := "UserAuth"
+	UserID := "1"
+	// change := "HashedPwd"
+	keyAttributes := map[string]*dynamodb.AttributeValue{
+		"UserID": {
+			S: aws.String(UserID),
+		},
+	}
+	expressionAttributes := map[string]*dynamodb.AttributeValue{
+		":HashedPwd": {
+			S: aws.String("cvbn"),
+		},
+		":Salt": {
+			S: aws.String("xcv"),
+		},
+	}
+	change := []string{"HashedPwd", "Salt"}
+	err := dynamodbops.UpdateItems(svc, tableName, keyAttributes, expressionAttributes, change)
+	if err != nil {
+		fmt.Println("Failed to update: ", err)
+		log.Error(err)
+	} else {
+		fmt.Println("Item updated")
 	}
 
 }
@@ -112,5 +144,6 @@ func main() {
 
 	// ReadDB()
 	// WriteDB()
-	DeleteDB()
+	// DeleteDB()
+	UpdateDB()
 }
