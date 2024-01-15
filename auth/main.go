@@ -1,19 +1,22 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
-	// "net/http"
+	"net/http"
 
 	log "github.com/sirupsen/logrus"
 
-	// chi "github.com/go-chi/chi/v5"
-	// "github.com/go-chi/chi/v5/middleware"
-	// "github.com/rs/cors"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
+	chi "github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
+	"github.com/rs/cors"
 
+	"auth/handler"
 	"helpers/awsservice"
+	"helpers/dstruct"
 	"helpers/dynamodbops"
 	"helpers/models"
 )
@@ -56,7 +59,6 @@ func WriteDB() {
 
 	tableName := "UserAuth"
 	item := models.UserAuth{
-		UserID:    "6",
 		Username:  "hello",
 		Salt:      "sdf",
 		HashedPwd: "cvb",
@@ -122,24 +124,38 @@ func UpdateDB() {
 }
 
 func main() {
-	// router := chi.NewRouter()
+	router := chi.NewRouter()
 
-	// router.Use(middleware.RequestID, middleware.Logger, middleware.Recoverer, middleware.URLFormat)
-	// cors := cors.New(cors.Options{
-	// 	AllowOriginRequestFunc: func(r *http.Request, origin string) bool { return true },
-	// 	AllowedHeaders:         []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token"},
-	// 	AllowCredentials:       true,
-	// 	MaxAge:                 3599, // Maximum value not ignored by any of major browsers
-	// })
+	router.Use(middleware.RequestID, middleware.Logger, middleware.Recoverer, middleware.URLFormat)
+	cors := cors.New(cors.Options{
+		AllowOriginRequestFunc: func(r *http.Request, origin string) bool { return true },
+		AllowedHeaders:         []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token"},
+		AllowCredentials:       true,
+		MaxAge:                 3599, // Maximum value not ignored by any of major browsers
+	})
 
-	// router.Use(cors.Handler)
+	router.Use(cors.Handler)
 
-	// router.Get("/", func(w http.ResponseWriter, r *http.Request) {
-	// 	w.Write([]byte("Welcome to URL Shortener Backend Authentication Microservice"))
-	// })
+	router.Get("/", func(w http.ResponseWriter, r *http.Request) {
+		w.Write([]byte("Welcome to URL Shortener Backend Authentication Microservice"))
+	})
 
-	// fmt.Println("Starting server at port 5050")
-	// fmt.Println(http.ListenAndServe(":5050", router))
+	router.Post("/auth", func(w http.ResponseWriter, r *http.Request) {
+		var credentials dstruct.UserLoginCredentials
+		decoder := json.NewDecoder(r.Body)
+		err := decoder.Decode(&credentials)
+		if err != nil {
+			http.Error(w, "Invalid JSON format", http.StatusBadRequest)
+			return
+		}
+
+		handler.Authenticate(credentials)
+		w.WriteHeader(http.StatusOK)
+
+	})
+
+	fmt.Println("Starting server at port 5050")
+	fmt.Println(http.ListenAndServe(":5050", router))
 
 	// ReadDB()
 	// WriteDB()
