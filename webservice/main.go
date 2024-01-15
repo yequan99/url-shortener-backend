@@ -23,7 +23,7 @@ func main() {
 	router.Use(cors.Handler)
 
 	router.Get("/", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("Welcome to URL Shortener Backend"))
+		w.Write([]byte("Welcome to URL Shortener Backend Webservice Microservice"))
 	})
 
 	fmt.Println("Starting server at port 8080")
