@@ -53,11 +53,13 @@ func WriteDB() {
 
 	tableName := "UserAuth"
 	item := Item{
-		UserID: "4",
+		UserID: "6",
 		Hash:   "cvb",
 	}
 
-	err := dynamodbops.InsertItems(svc, tableName, item)
+	condition := []string{"userID"}
+
+	err := dynamodbops.InsertItems(svc, tableName, item, condition)
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -84,5 +86,5 @@ func main() {
 	// fmt.Println(http.ListenAndServe(":5050", router))
 
 	// ReadDB()
-	// WriteDB()
+	WriteDB()
 }
