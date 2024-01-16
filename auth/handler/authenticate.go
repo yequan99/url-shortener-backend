@@ -17,6 +17,7 @@ import (
 )
 
 func Authenticate(credentials dstruct.UserLoginCredentials) error {
+
 	// Get Hash
 	svc := awsservice.GetDBConn()
 	tableName := "UserAuth"
@@ -41,6 +42,7 @@ func Authenticate(credentials dstruct.UserLoginCredentials) error {
 	// Check if hashedpwd is correct
 	authenticated := comparePasswords(entry.HashedPwd, credentials.Password)
 	if !authenticated {
+		log.Errorf("[User Login] Failed authentication")
 		return fmt.Errorf("[User Login] Failed authentication")
 	}
 
@@ -49,12 +51,8 @@ func Authenticate(credentials dstruct.UserLoginCredentials) error {
 
 func Register(credentials dstruct.UserLoginCredentials) error {
 
-	fmt.Println(credentials.Username)
-	fmt.Println(credentials.Password)
-
 	// Salt and hash password
 	hash := hashAndSalt([]byte(credentials.Password))
-	fmt.Println(hash)
 
 	// Insert to DB
 	svc := awsservice.GetDBConn()
