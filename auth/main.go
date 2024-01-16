@@ -140,6 +140,13 @@ func main() {
 
 		err = handler.Authenticate(credentials)
 		if err != nil {
+			response := dstruct.ErrorMessage{
+				Error: err.Error(),
+			}
+			jsonResponse, _ := json.Marshal(response)
+
+			w.Header().Set("Content-Type", "application/json")
+			w.Write(jsonResponse)
 			w.WriteHeader(http.StatusBadRequest)
 		} else {
 			w.WriteHeader(http.StatusOK)
