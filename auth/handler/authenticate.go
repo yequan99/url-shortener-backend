@@ -65,10 +65,9 @@ func Register(credentials dstruct.UserLoginCredentials) error {
 	condition := []string{"Username"}
 	err := dynamodbops.InsertItems(svc, tableName, item, condition)
 	if err != nil {
-		log.Error("[User Registration] Unable to register user:", err)
-		return fmt.Errorf("[User Registration] Unable to register user:", err)
+		log.Errorf("[User Registration] Unable to register user: %s", err)
+		return fmt.Errorf("Username taken!")
 	}
-
 	return nil
 }
 
