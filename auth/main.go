@@ -146,8 +146,8 @@ func main() {
 			jsonResponse, _ := json.Marshal(response)
 
 			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusUnauthorized)
 			w.Write(jsonResponse)
-			w.WriteHeader(http.StatusBadRequest)
 		} else {
 			w.WriteHeader(http.StatusOK)
 		}
@@ -164,7 +164,14 @@ func main() {
 
 		err = handler.Register(credentials)
 		if err != nil {
-			w.WriteHeader(http.StatusBadRequest)
+			response := dstruct.ErrorMessage{
+				Error: err.Error(),
+			}
+			jsonResponse, _ := json.Marshal(response)
+
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusConflict)
+			w.Write(jsonResponse)
 		} else {
 			w.WriteHeader(http.StatusOK)
 		}
