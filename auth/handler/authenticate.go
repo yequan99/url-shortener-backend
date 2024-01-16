@@ -30,20 +30,20 @@ func Authenticate(credentials dstruct.UserLoginCredentials) error {
 	entry := models.UserAuth{}
 	hashedPwd, err := dynamodbops.ReadItems(svc, tableName, keyAttributes)
 	if err != nil {
-		log.Error("Username does not exists: ", err)
-		return fmt.Errorf("Username does not exists: %s", err)
+		log.Errorf("[User Login] Username does not exist: %s", err)
+		return fmt.Errorf("Username does not exist!")
 	} else {
 		err = dynamodbattribute.UnmarshalMap(hashedPwd.Item, &entry)
 		if err != nil {
-			log.Error("Failed to unmarshal DB entry: %s", err)
+			log.Errorf("Failed to unmarshal DB entry: %s", err)
 		}
 	}
 
 	// Check if hashedpwd is correct
 	authenticated := comparePasswords(entry.HashedPwd, credentials.Password)
 	if !authenticated {
-		log.Errorf("[User Login] Failed authentication")
-		return fmt.Errorf("[User Login] Failed authentication")
+		log.Errorf("[User Login] Invalid Password")
+		return fmt.Errorf("Invalid Password!")
 	}
 
 	return nil
