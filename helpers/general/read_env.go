@@ -1,14 +1,16 @@
 package general
 
 import (
+	"fmt"
 	"os"
 )
 
 // GetEnv reads from environment and returns a default value as a string
-func GetEnv(key string, defaultVal string) string {
-	if value, exists := os.LookupEnv(key); exists {
-		return value
+func GetJWTSecret(key string) (string, error) {
+	value, exists := os.LookupEnv(key)
+	if exists {
+		return value, nil
 	}
 
-	return defaultVal
+	return value, fmt.Errorf("No JWT Secret in env")
 }

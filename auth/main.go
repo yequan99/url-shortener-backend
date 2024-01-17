@@ -4,13 +4,17 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"time"
 
+	jwt "github.com/dgrijalva/jwt-go"
 	chi "github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/rs/cors"
+	log "github.com/sirupsen/logrus"
 
 	"auth/handler"
 	"helpers/dstruct"
+	"helpers/general"
 )
 
 // func ReadDB() {
@@ -149,6 +153,13 @@ func main() {
 			w.WriteHeader(http.StatusUnauthorized)
 			w.Write(jsonResponse)
 		} else {
+			token, err := generateJWTToken(credentials.Username)
+			if err != nil {
+				http.Error(w, "Error generating JWT token", http.StatusInternalServerError)
+				return
+			}
+			w.Header().Set("Content-Type", "application/json")
+			w.Header().Set("X-Auth-Token", token)
 			w.WriteHeader(http.StatusOK)
 		}
 	})
@@ -185,4 +196,27 @@ func main() {
 	// DeleteDB()
 	// UpdateDB()
 
+}
+
+// GenerateJWTToken generates a new JWT token for the given username
+func generateJWTToken(username string) (string, error) {
+	// Create the token
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"username": username,
+		"exp":      time.Now().Add(30 * time.Second).Unix(),
+	})
+
+	// Sign the token with the secret key
+	signingKey, err := general.GetJWTSecret("JWT_TOKEN")
+	if err != nil {
+		log.Errorf("Error 1: %s", err)
+		return "", err
+	}
+	tokenString, err := token.SignedString([]byte(signingKey))
+	if err != nil {
+		log.Errorf("Error 2: %s", err)
+		return "", err
+	}
+
+	return tokenString, nil
 }
