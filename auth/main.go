@@ -188,6 +188,11 @@ func main() {
 		}
 	})
 
+	router.Post("/logout", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Del("X-Auth-Token")
+		w.WriteHeader(http.StatusOK)
+	})
+
 	fmt.Println("Starting server at port 5050")
 	fmt.Println(http.ListenAndServe(":5050", router))
 
