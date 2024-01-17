@@ -1,10 +1,13 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 
+	"helpers/dstruct"
 	"helpers/general"
+	"webservice/handler"
 
 	jwt "github.com/dgrijalva/jwt-go"
 	chi "github.com/go-chi/chi/v5"
@@ -27,11 +30,29 @@ func main() {
 	router.Use(cors.Handler)
 
 	// Add JWT token authentication middleware
-	router.Use(authMiddleware)
+	// router.Use(authMiddleware)
 
 	router.Get("/", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte("Welcome to URL Shortener Backend Webservice Microservice"))
+		fmt.Println("/")
+	})
+
+	router.Post("/shorten", func(w http.ResponseWriter, r *http.Request) {
+		var urlInfo dstruct.GenerateShortURL
+		decoder := json.NewDecoder(r.Body)
+		err := decoder.Decode(&urlInfo)
+		if err != nil {
+			http.Error(w, "Invalid JSON format", http.StatusBadRequest)
+			return
+		}
+
+		_, err = handler.GetShortURL(urlInfo.Username, urlInfo.LongURL)
+		if err != nil {
+			fmt.Println("Error generating")
+		}
+
+		w.WriteHeader(http.StatusOK)
 	})
 
 	fmt.Println("Starting server at port 8080")
@@ -43,7 +64,7 @@ func authMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		tokenString := r.Header.Get("X-Auth-Token")
 		if tokenString == "" {
-			http.Error(w, "Missing Authorization header", http.StatusOK)
+			http.Error(w, "Missing Authorization header", http.StatusUnauthorized)
 			return
 		}
 
@@ -66,7 +87,6 @@ func authMiddleware(next http.Handler) http.Handler {
 			http.Error(w, "Invalid token", http.StatusUnauthorized)
 			return
 		}
-
 		next.ServeHTTP(w, r)
 	})
 }
