@@ -20,3 +20,7 @@ type GenerateShortURL struct {
 	Username string `json:"Username"`
 	LongURL  string `json:"Longurl"`
 }
+
+type ReturnShortURL struct {
+	ShortURL string `json:"ShortURL"`
+}

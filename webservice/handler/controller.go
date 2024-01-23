@@ -3,6 +3,10 @@ package handler
 import (
 	"fmt"
 
+	"helpers/awsservice"
+	"helpers/dynamodbops"
+	"helpers/models"
+
 	log "github.com/sirupsen/logrus"
 	"github.com/teris-io/shortid"
 )
@@ -15,10 +19,23 @@ func GetShortURL(username string, longURL string) (string, error) {
 	if err != nil {
 		log.Errorf("[ID generator] Unable to generate a short ID")
 	}
-	shortURL := fmt.Sprintf("http://127.0.0.1:8080/%s", shortID)
-	fmt.Printf("Shortened URL: %s\n", shortURL)
+	shortURL := "http://127.0.0.1:8080/" + shortID
 
 	// Store Short URL into DB
+	svc := awsservice.GetDBConn()
+
+	tableName := "UrlCode"
+	item := models.UrlCode{
+		Username: username,
+		ShortURL: shortURL,
+		LongURL:  longURL,
+	}
+
+	err = dynamodbops.InsertItems(svc, tableName, item, []string{})
+	if err != nil {
+		log.Errorf("[Short URL Generation] Unable to create new URL: %s", err)
+		return "", fmt.Errorf("Unable to create new URL")
+	}
 
 	return shortURL, nil
 }

@@ -19,14 +19,15 @@ import (
 func main() {
 	router := chi.NewRouter()
 
+	router.Use(middleware.RequestID, middleware.Logger, middleware.Recoverer, middleware.URLFormat)
 	cors := cors.New(cors.Options{
 		AllowOriginRequestFunc: func(r *http.Request, origin string) bool { return true },
 		AllowedHeaders:         []string{"Accept", "X-Auth-Token", "Content-Type", "X-CSRF-Token"},
 		AllowCredentials:       true,
 		MaxAge:                 3599, // Maximum value not ignored by any of major browsers
-		OptionsPassthrough:     true, // Allow preflight requests to pass through
+		// OptionsPassthrough:     true, // Allow preflight requests to pass through
 	})
-	router.Use(middleware.RequestID, middleware.Logger, middleware.Recoverer, middleware.URLFormat)
+
 	router.Use(cors.Handler)
 
 	// Add JWT token authentication middleware
@@ -47,12 +48,19 @@ func main() {
 			return
 		}
 
-		_, err = handler.GetShortURL(urlInfo.Username, urlInfo.LongURL)
+		shortURL, err := handler.GetShortURL(urlInfo.Username, urlInfo.LongURL)
 		if err != nil {
 			fmt.Println("Error generating")
+			w.WriteHeader(http.StatusBadRequest)
+		} else {
+			response := dstruct.ReturnShortURL{
+				ShortURL: shortURL,
+			}
+			jsonResponse, _ := json.Marshal(response)
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusOK)
+			w.Write(jsonResponse)
 		}
-
-		w.WriteHeader(http.StatusOK)
 	})
 
 	fmt.Println("Starting server at port 8080")
