@@ -1,11 +1,11 @@
 package main
 
 import (
-	"encoding/json"
+	// "encoding/json"
 	"fmt"
 	"net/http"
 
-	"helpers/dstruct"
+	// "helpers/dstruct"
 	"helpers/general"
 	"webservice/handler"
 
@@ -39,29 +39,8 @@ func main() {
 		fmt.Println("/")
 	})
 
-	router.Post("/shorten", func(w http.ResponseWriter, r *http.Request) {
-		var urlInfo dstruct.GenerateShortURL
-		decoder := json.NewDecoder(r.Body)
-		err := decoder.Decode(&urlInfo)
-		if err != nil {
-			http.Error(w, "Invalid JSON format", http.StatusBadRequest)
-			return
-		}
-
-		shortURL, err := handler.GetShortURL(urlInfo.Username, urlInfo.LongURL)
-		if err != nil {
-			fmt.Println("Error generating")
-			w.WriteHeader(http.StatusBadRequest)
-		} else {
-			response := dstruct.ReturnShortURL{
-				ShortURL: shortURL,
-			}
-			jsonResponse, _ := json.Marshal(response)
-			w.Header().Set("Content-Type", "application/json")
-			w.WriteHeader(http.StatusOK)
-			w.Write(jsonResponse)
-		}
-	})
+	router.Post("/{userId}/shorten-url", handler.GenerateShortenedURLs)
+	router.Get("/{userId}/shorten-url", handler.GetShortenedURLs)
 
 	fmt.Println("Starting server at port 8080")
 	fmt.Println(http.ListenAndServe(":8080", router))

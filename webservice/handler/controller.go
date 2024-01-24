@@ -6,6 +6,7 @@ import (
 	"helpers/awsservice"
 	"helpers/dynamodbops"
 
+	"helpers/dstruct"
 	"helpers/models"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -15,7 +16,7 @@ import (
 	"github.com/teris-io/shortid"
 )
 
-func GetShortURL(username string, longURL string) (string, error) {
+func GenShortURL(username string, longURL string) (string, error) {
 
 	svc := awsservice.GetDBConn()
 	domain := "http://127.0.0.1:8080/"
@@ -97,4 +98,36 @@ func GetShortURL(username string, longURL string) (string, error) {
 	}
 
 	return domain + shortID, nil
+}
+
+func GetStoredUrls(username string) ([]dstruct.ReturnUrlArray, error) {
+
+	svc := awsservice.GetDBConn()
+
+	tableName := "UserURL"
+	nonPartitionKeyAttributeName := "Username"
+	nonPartitionKeyAttributeValue := username
+
+	scanItems, _ := dynamodbops.ScanItems(svc, tableName, nonPartitionKeyAttributeName, nonPartitionKeyAttributeValue)
+
+	var foundItems []models.UserURL
+	err := dynamodbattribute.UnmarshalListOfMaps(scanItems, &foundItems)
+	if err != nil {
+		return nil, fmt.Errorf("[Retrieving URLs] Unable to unmarshal found URLs: ", err)
+	}
+
+	if len(foundItems) == 0 {
+		return nil, fmt.Errorf("[Retrieving URLs] No stored URL found under given username")
+	}
+
+	var arrayItems []dstruct.ReturnUrlArray
+	for _, item := range foundItems {
+		urlItem := dstruct.ReturnUrlArray{
+			ShortURL: item.ShortURL,
+			LongURL:  item.LongURL,
+		}
+		arrayItems = append(arrayItems, urlItem)
+	}
+
+	return arrayItems, nil
 }
