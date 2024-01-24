@@ -5,8 +5,14 @@ type UserAuth struct {
 	HashedPwd string `json:"HashedPwd"`
 }
 
-type UrlCode struct {
+type UserURL struct {
 	Username string `json:"Username"`
 	ShortURL string `json:"ShortURL"`
 	LongURL  string `json:"LongURL"`
+}
+
+type UrlTable struct {
+	LongURL  string `json:"LongURL"`
+	ShortURL string `json:"ShortURL"`
+	ShortID  string `json:"ShortID"`
 }

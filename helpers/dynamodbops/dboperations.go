@@ -8,6 +8,27 @@ import (
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
 )
 
+// Scanning for items in a DynamoDB Table
+func ScanItems(svc *dynamodb.DynamoDB, tableName string, nonPartitionKeyAttributeName string, nonPartitionKeyAttributeValue string) ([]map[string]*dynamodb.AttributeValue, error) {
+	input := &dynamodb.ScanInput{
+		TableName:        aws.String(tableName),
+		FilterExpression: aws.String("#attr = :value"),
+		ExpressionAttributeNames: map[string]*string{
+			"#attr": aws.String(nonPartitionKeyAttributeName),
+		},
+		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
+			":value": {
+				S: aws.String(nonPartitionKeyAttributeValue),
+			},
+		},
+	}
+	result, err := svc.Scan(input)
+	if err != nil {
+		return nil, fmt.Errorf("Unable to find: %w", err)
+	}
+	return result.Items, nil
+}
+
 // Listing items in a DynamoDB Table
 func ReadItems(svc *dynamodb.DynamoDB, tableName string, keyAttributes map[string]*dynamodb.AttributeValue) (*dynamodb.GetItemOutput, error) {
 	result, err := svc.GetItem(&dynamodb.GetItemInput{
@@ -60,7 +81,6 @@ func InsertItems(svc *dynamodb.DynamoDB, tableName string, newItem interface{}, 
 		return fmt.Errorf("error calling PutItem: %s", err)
 	}
 
-	fmt.Printf("Successfully added item to table %s\n", tableName)
 	return nil
 }
 
