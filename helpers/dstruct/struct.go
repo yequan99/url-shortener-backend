@@ -17,8 +17,7 @@ type ErrorMessage struct {
 // ========================
 
 type GenerateShortURL struct {
-	Username string `json:"Username"`
-	LongURL  string `json:"Longurl"`
+	LongURL string `json:"Longurl"`
 }
 
 type ReturnShortURL struct {
