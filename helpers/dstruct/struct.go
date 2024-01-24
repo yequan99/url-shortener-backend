@@ -23,3 +23,8 @@ type GenerateShortURL struct {
 type ReturnShortURL struct {
 	ShortURL string `json:"ShortURL"`
 }
+
+type ReturnUrlArray struct {
+	ShortURL string `json:"ShortURL"`
+	LongURL  string `json:"LongURL"`
+}
