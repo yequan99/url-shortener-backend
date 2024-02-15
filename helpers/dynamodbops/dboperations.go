@@ -84,6 +84,35 @@ func InsertItems(svc *dynamodb.DynamoDB, tableName string, newItem interface{}, 
 	return nil
 }
 
+// // Getting Auto-Increment values from DynamoDB Table
+// func GetAutoIncrementValue(svc *dynamodb.DynamoDB, tableName string, autoIncrementKey uint64) (uint64, error) {
+// 	result, err := svc.UpdateItem(&dynamodb.UpdateItemInput{
+// 		TableName: aws.String(tableName),
+// 		Key: map[string]*dynamodb.AttributeValue{
+// 			"ID": {
+// 				S: aws.String(autoIncrementKey),
+// 			},
+// 		},
+// 		UpdateExpression: aws.String("SET auto_increment = auto_increment + :inc"),
+// 		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
+// 			":inc": {
+// 				N: aws.String("1"),
+// 			},
+// 		},
+// 		ReturnValues: aws.String("UPDATED_NEW"),
+// 	})
+// 	if err != nil {
+// 		return 0, fmt.Errorf("error updating auto-increment value: %s", err)
+// 	}
+
+// 	autoIncrementValue, err := strconv.ParseUint(*result.Attributes["auto_increment"].N, 10, 64)
+// 	if err != nil {
+// 		return 0, fmt.Errorf("error converting auto-increment value to int: %s", err)
+// 	}
+
+// 	return autoIncrementValue, nil
+// }
+
 // Deleting items in DynamoDB Table
 func DeleteItems(svc *dynamodb.DynamoDB, tableName string, keyAttributes map[string]*dynamodb.AttributeValue) error {
 

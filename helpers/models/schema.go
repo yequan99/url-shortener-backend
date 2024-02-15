@@ -6,9 +6,15 @@ type UserAuth struct {
 }
 
 type UserURL struct {
+	ID       uint64 `json:"ID"`
 	Username string `json:"Username"`
 	ShortURL string `json:"ShortURL"`
 	LongURL  string `json:"LongURL"`
+}
+
+type UserUrlID struct {
+	ID     uint64 `json:"ID"`
+	LastID uint64 `json:"LastID"`
 }
 
 type UrlTable struct {

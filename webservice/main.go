@@ -41,6 +41,7 @@ func main() {
 
 	router.Post("/{userId}/shorten-url", handler.GenerateShortenedURLs)
 	router.Get("/{userId}/shorten-url", handler.GetShortenedURLs)
+	router.Delete("/delete/{urlId}", handler.DeleteUserURL)
 
 	fmt.Println("Starting server at port 8080")
 	fmt.Println(http.ListenAndServe(":8080", router))

@@ -25,6 +25,7 @@ type ReturnShortURL struct {
 }
 
 type ReturnUrlArray struct {
+	ID       uint64 `json:"ID"`
 	ShortURL string `json:"ShortURL"`
 	LongURL  string `json:"LongURL"`
 }

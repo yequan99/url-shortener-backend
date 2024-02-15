@@ -70,7 +70,16 @@ func GenShortURL(username string, longURL string) (string, error) {
 	}
 
 	// Store data in UserURL Table
-	tableName = "UserURL"
+	// tableName = "UserUrl1"
+	// keyAttributes = map[string]*dynamodb.AttributeValue{
+	// 	"ID": {
+	// 		N: aws.String(longURL),
+	// 	},
+	// }
+
+	// var shortID string
+	// tableItem, err := dynamodbops.ReadItems(svc, tableName, keyAttributes)
+
 	userUrl_item := models.UserURL{
 		Username: username,
 		ShortURL: domain + shortID,
@@ -104,7 +113,7 @@ func GetStoredUrls(username string) ([]dstruct.ReturnUrlArray, error) {
 
 	svc := awsservice.GetDBConn()
 
-	tableName := "UserURL"
+	tableName := "UserUrl1"
 	nonPartitionKeyAttributeName := "Username"
 	nonPartitionKeyAttributeValue := username
 
@@ -123,6 +132,7 @@ func GetStoredUrls(username string) ([]dstruct.ReturnUrlArray, error) {
 	var arrayItems []dstruct.ReturnUrlArray
 	for _, item := range foundItems {
 		urlItem := dstruct.ReturnUrlArray{
+			ID:       item.ID,
 			ShortURL: item.ShortURL,
 			LongURL:  item.LongURL,
 		}
@@ -130,4 +140,9 @@ func GetStoredUrls(username string) ([]dstruct.ReturnUrlArray, error) {
 	}
 
 	return arrayItems, nil
+}
+
+func DeleteURL(urlId string) error {
+
+	return nil
 }

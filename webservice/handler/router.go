@@ -49,3 +49,15 @@ func GetShortenedURLs(w http.ResponseWriter, r *http.Request) {
 		w.Write(jsonResponse)
 	}
 }
+
+func DeleteUserURL(w http.ResponseWriter, r *http.Request) {
+	urlId := chi.URLParam(r, "urlId")
+
+	err := DeleteURL(urlId)
+	if err != nil {
+		log.Errorf("%s", err)
+		w.WriteHeader(http.StatusBadRequest)
+	} else {
+		w.WriteHeader(http.StatusOK)
+	}
+}
